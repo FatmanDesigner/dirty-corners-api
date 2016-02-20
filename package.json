@@ -1,0 +1,27 @@
+{
+  "name": "dirty-corners-api",
+  "version": "1.0.0",
+  "description": "RESTful API for Dirty Corner project",
+  "main": "server.js",
+  "scripts": {
+    "test": "cd /home/khanhhua/Applications/dirty-corners-api",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FatmanDesigner/dirty-corners-api.git"
+  },
+  "keywords": [
+    "social",
+    "app"
+  ],
+  "author": "Khanh Hua",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/FatmanDesigner/dirty-corners-api/issues"
+  },
+  "homepage": "https://github.com/FatmanDesigner/dirty-corners-api",
+  "dependencies": {
+    "express": "^4.13.4"
+  }
+}
