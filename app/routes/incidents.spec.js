@@ -22,17 +22,28 @@ describe('Incident controller: GET', function () {
 });
 
 describe('Incident controller: POST', function () {
-    var incident;
+    var incidents;
     
     before(function() {
-    // mock the error reporter
+        mockery.registerMock('../models/incident', function () {
+            var model = function () {};
+            model.prototype = {
+                save: function () { 
+                    console.warn('Should be overriden with sinon.mock');
+                    return Promise.resolve();
+                }
+            };
+            
+            return model;
+        }());
+        // mock the error reporter
         mockery.enable({
           warnOnReplace: false,
           warnOnUnregistered: false,
           useCleanCache: true
         });
         
-        incident = require('./incidents');
+        incidents = require('./incidents');
     });
     
     after(function() {
@@ -41,12 +52,11 @@ describe('Incident controller: POST', function () {
     });
     
     it('has POST handler', function () {
-        expect(typeof(incident.POST)).equal('function');
+        expect(typeof(incidents.POST)).equal('function');
     });
     
     it('resonds to /', function (done) {
         var Incident = require('../models/incident');
-        var incident = require('./incidents');
         
         var mockedIncident = {
             __v: 0,
@@ -59,8 +69,8 @@ describe('Incident controller: POST', function () {
                 }
             }
         };
-        
-        sinon.stub(Incident.prototype, 'save').returns(null); // Promise.resolve(mockedIncident)
+
+        sinon.stub(Incident.prototype, 'save').returns(Promise.resolve(mockedIncident))
         
         var req = {
             body: {
@@ -76,7 +86,7 @@ describe('Incident controller: POST', function () {
         var res = {};
         res.send = sinon.spy();
         
-        incident.POST(req, res);
+        incidents.POST(req, res);
         
         setTimeout(function() {
             expect(Incident.prototype.save.calledOnce).to.equal(true);
