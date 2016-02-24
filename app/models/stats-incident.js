@@ -21,7 +21,7 @@ var statsIncidentSchema = new Schema({
     report: { type: Schema.Types.ObjectId, ref: 'report' },
     created_at: Date,
     updated_at: Date
-}, { autoIndex: true });
+}, { autoIndex: false });
 
 statsIncidentSchema.index({
     year: -1,
