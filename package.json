@@ -25,7 +25,8 @@
     "express": "^4.13.4",
     "mongoose": "^4.4.4",
     "dotenv": "^2.0.0",
-    "body-parser": "^1.15.0"
+    "body-parser": "^1.15.0",
+    "amqplib": "^0.4.1"
   },
   "devDependencies": {
     "mocha": "^2.4.5",
