@@ -9,12 +9,12 @@ var statsIncidentSchema = new Schema({
     hour: Number,
     minute: Number, // Should rounded down to nearest quarters
     location:{
-      placeid: String,
-      route: String,
-      locality: String,
-      administrative_area_level_2: String,
-      administrative_area_level_1: String,
-     country: String
+        placeid: String,
+        route: String,
+        locality: String,
+        administrative_area_level_2: String,
+        administrative_area_level_1: String,
+        country: String
     },
     type: String,
     total: Number,
@@ -31,7 +31,7 @@ statsIncidentSchema.index({
     minute: -1,
     location: 1,
     type: 1
-});
+}, { unique: true });
 
 // See https://scotch.io/tutorials/using-mongoosejs-in-node-js-and-mongodb-applications
 statsIncidentSchema.pre('save', function(next) {
