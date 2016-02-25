@@ -2,13 +2,13 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 // create a schema
-var statsIncidentSchema = new Schema({
+var reportSchema = new Schema({
     year: Number,
     month: Number, // starts from 0 to 11, just to be JS friendly
     day: Number,
     hour: Number,
     minute: Number, // Should rounded down to nearest quarters
-    location:{
+    location:{  // For each Incident Stats, a report is generated with either placeid or country, administrative_area_level_1...
         placeid: String,
         route: String,
         locality: String,
@@ -16,26 +16,32 @@ var statsIncidentSchema = new Schema({
         administrative_area_level_1: String,
         country: String
     },
+    location_level: String, // The most specific level type: placeid | route | locality | admin administrative_area_level_1 | administrative_area_level_2 | country
     type: String,
-    total: Number,
-    report: { type: Schema.Types.ObjectId, ref: 'report' },
-    incident_list: [{ type: Schema.Types.ObjectId, ref: 'incident' }],
+    confirmed_total: Number,
+    denied_total: Number,
+    stats_incident: { type: Schema.Types.ObjectId, ref: 'stats_incident' }, // Gets the list of backing evidence here
     created_at: Date,
     updated_at: Date
 }, { autoIndex: false });
 
-statsIncidentSchema.index({
+reportSchema.index({
     year: -1,
     month: -1,
     day: -1,
     hour: -1,
     minute: -1,
-    location: 1,
+    "location.placeid": 1,
+    "location.route": 1,
+    "location.locality": 1,
+    "location.administrative_area_level_2": 1,
+    "location.administrative_area_level_1": 1,
+    "location.country": 1,
     type: 1
 }, { unique: true });
 
 // See https://scotch.io/tutorials/using-mongoosejs-in-node-js-and-mongodb-applications
-statsIncidentSchema.pre('save', function(next) {
+reportSchema.pre('save', function (next) {
   // get the current date
   var currentDate = new Date();
   
@@ -51,7 +57,5 @@ statsIncidentSchema.pre('save', function(next) {
 
 // the schema is useless so far
 // we need to create a model using it
-var StatsIncident = mongoose.model('stats_incident', statsIncidentSchema);
-
-// make this available to our users in our Node applications
-module.exports = StatsIncident;
+var Report = mongoose.model('report', reportSchema);
+module.exports = Report;
