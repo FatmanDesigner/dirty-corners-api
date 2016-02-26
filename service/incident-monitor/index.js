@@ -16,7 +16,7 @@ var util = require('../util');
 var incidentHandler = require('../handlers/incident');
 
 var QUEUE_NAME = 'events';
-var commonOptions = { durable: true, noAck: true };
+var commonOptions = { durable: true };
 
 
 // AMQP Consumer
@@ -53,7 +53,7 @@ open.then(function connected (conn) {
               }
           }
       );
-    });
+    }, { noAck: true });
   });
 
   return promise;
