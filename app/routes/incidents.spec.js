@@ -29,7 +29,7 @@ describe('Incident controller: POST', function () {
             var model = function () {};
             model.prototype = {
                 save: function () { 
-                    console.warn('Should be overriden with sinon.mock');
+                    console.warn('Should be overriden with sinon.stub');
                     throw new Error('Not implemented');
                 }
             };

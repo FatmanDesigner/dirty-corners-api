@@ -7,6 +7,7 @@
  */
 
 var StatsIncident = require('../../app/models/stats-incident');
+var Report = require('../../app/models/report');
 
 var DEFAULT_MINIMUM_INCIDENTS_BEFORE_FILING_REPORT = 5;
 var DEFAULT_INCIDENT_TIME_RESOLUTION = 15; // minutes. Incidents should happen within this threshold to be counted as 1
@@ -15,7 +16,7 @@ var DEFAULT_INCIDENT_TIME_RESOLUTION = 15; // minutes. Incidents should happen w
  * If the returned promise returns true, the function handle must be invoked, else passthrough must be
  */ 
 exports.filter = function filter (event) {
-    console.log('[handler: incident.filter]');
+    console.log('[handler: incident.filter] Filtering event');
 
     if (event.type !== 'INCIDENT_REPORTED') {
         return Promise.resolve(false);
@@ -38,18 +39,23 @@ exports.filter = function filter (event) {
     };
     console.log('[handler: incident.filter] Querying for', conditions);
     
-    var doc = Object.assign({}, conditions, { total: 1 });
+    var docStats = Object.assign({}, conditions, { total: 1 });
     var updateOptions = { new: true };
     
     return StatsIncident.findOne(conditions).then(function (statsIncident) {
         if (!statsIncident) {
-            console.log('[handler: incident.filter] Stats incident not found. Creating new one', doc);
+            docStats.incident_list = [incident._id];
+            console.log('[handler: incident.filter] Stats incident not found. Creating new one', docStats);
             
-            return new StatsIncident(doc).save();
+            return new StatsIncident(docStats).save();
         }
         
         console.log('[handler: incident.filter] Incrementing total by one', statsIncident.id);
-        return StatsIncident.findByIdAndUpdate(statsIncident.id, { $inc: {total: 1 }}, updateOptions);
+        return StatsIncident.findByIdAndUpdate(statsIncident.id, 
+                {
+                    $inc: { total: 1 },
+                    $push: { incident_list: incident._id }
+                }, updateOptions);
     }).then(handler).catch(errorHandler);
     
     // Function private
@@ -62,10 +68,13 @@ exports.filter = function filter (event) {
         console.log('[handler: incident.filter] Affected stats incident', statsIncident.id);
         
         if (statsIncident.total < DEFAULT_MINIMUM_INCIDENTS_BEFORE_FILING_REPORT) {
-            return false;
+            return Promise.resolve(false);
         }
         else {
-            return true;
+            // WARNING: Original event has been mutated
+            event.outParams = [statsIncident.toObject()];
+            
+            return Promise.resolve(true);
         }
     }
     
@@ -76,10 +85,81 @@ exports.filter = function filter (event) {
     }
 };
 
+
 exports.handle = function handle (event) {
-    console.log('[handler: incident.handle]');
+    if (!event.outParams || !outParams.length) {
+        throw new Error('Out params missing. Expecting statsIncident.');
+    }
+    var statsIncident = event.outParams[0];
     
-    return Promise.resolve();    
+    console.log('[handler: incident.handle] Stats Incident #', statsIncident._id);
+    // TODO If there is a need for multiple level of reports, fan out here
+    // FIXME Find a better way to transfer statsIncident
+    
+    var condition = {
+        year: statsIncident.year,
+        month: statsIncident.month,
+        day: statsIncident.day,
+        hour: statsIncident.hour,
+        minute: statsIncident.minute,
+        type: statsIncident.type
+    };
+    
+    if (statsIncident.report) {
+        // Do nothing because a report is already created
+        console.log('[handler: incident.handle] A report for Stats Incident had already been created for Stats Incident', statsIncident._id);
+        
+        return true;
+    }
+    else if (statsIncident.location.placeid) {
+        condition.location = { 
+            placeid: statsIncident.location.placeid
+        };
+    }
+    else {
+        condition.location = Object.assign({}, statsIncident.location);
+        delete condition.location.placeid;
+    }
+    
+    var location_level = ((('placeid' in statsIncident.location)?'placeid':null)
+                         || (('route' in statsIncident.location)?'route':null)
+                         || (('locality' in statsIncident.location)?'locality':null)
+                         || (('administrative_area_level_2' in statsIncident.location)?'administrative_area_level_2':null)
+                         || (('administrative_area_level_1' in statsIncident.location)?'administrative_area_level_1':null)
+                         || (('country' in statsIncident.location)?'country':null)
+                         );
+    var docReport = Object.assign({}, condition,
+        { 
+            location_level: location_level,
+            confirmed_total: 0,
+            denied_total: 0,
+            stats_incident: statsIncident._id,
+        });
+    
+    console.log('[handler: incident.handle] Querying for report', condition);
+    return Report.findOne(condition).then(function (report) {
+        if (!report) {
+            console.log('[handler: incident.handle] Creating a new report for Stats incident #', statsIncident._id);
+            
+            return (new Report(docReport)).save().then(function (report) {
+                console.log('[handler: incident.handle] Associating new report to Stats incident #', statsIncident._id);
+                
+                return StatsIncident.findByIdAndUpdate(statsIncident._id, { report: report.id });
+            });
+            
+            // Possibly send to Pubnub for notifications here
+        }
+        // Else do nothing because a report is already created
+        console.log('[handler: incident.handle] A report for Stats Incident had already been created');
+        
+        return true;
+        // Leave it here as guidance
+        // return Report.findByIdAndUpdate(report.id, 
+        //     {
+        //         $inc: { total: 1 },
+        //         $push: { incident_list: incident.id }
+        //     }, updateOptions);
+    });
 };
 
 /**
