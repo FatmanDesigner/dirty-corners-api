@@ -44,7 +44,7 @@ describe('Unit Test: Incident (event) handler interface', function () {
 });
 
 describe('Unit Test: Incident (event) handler', function () {
-   before(function () {
+    before(function () {
         mockery.registerMock('../../app/models/stats-incident', function () {
             var model = function () {};
             model.prototype = {
@@ -88,7 +88,7 @@ describe('Unit Test: Incident (event) handler', function () {
  
    });
    
-   after(function() {
+    after(function() {
         // disable mock after tests complete
         mockery.disable();
     });
@@ -113,12 +113,15 @@ describe('Unit Test: Incident (event) handler', function () {
         var promise = incidentHandler.filter(validEvent);
         console.log(promise);
         
-        promise.then(function (resolved) {
-            expect(StatsIncident.findOne.calledOnce).to.be(true);
-            expect(StatsIncident.prototype.calledOnce).to.be(true);
-            expect(resolved).to.be(false);
-            
-            done(); 
-        });
+        promise.then(
+            function (resolved) {
+                expect(StatsIncident.findOne.calledOnce).to.be(true);
+                expect(StatsIncident.prototype.save.calledOnce).to.be(true);
+                expect(resolved).to.be(false);
+   
+                done();
+            }, 
+            done
+        );
     });
 });

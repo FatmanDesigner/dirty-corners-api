@@ -68,13 +68,13 @@ exports.filter = function filter (event) {
         console.log('[handler: incident.filter] Affected stats incident', statsIncident.id);
         
         if (statsIncident.total < DEFAULT_MINIMUM_INCIDENTS_BEFORE_FILING_REPORT) {
-            return false;
+            return Promise.resolve(false);
         }
         else {
             // WARNING: Original event has been mutated
             event.outParams = [statsIncident.toObject()];
             
-            return true;
+            return Promise.resolve(true);
         }
     }
     
