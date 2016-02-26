@@ -4,7 +4,8 @@ var open = require('amqplib').connect(url);
 var util = require('../util');
 
 var QUEUE_NAME = 'events';
-var commonOptions = { durable: true, noAck: true };
+var commonOptions = { durable: true };
+var messageOption = { persistent: true };
 
 var channel;
 
@@ -30,7 +31,7 @@ module.exports = function publish (incident) {
             ch.assertQueue(QUEUE_NAME, commonOptions); // Python declare equivalence
             channel = ch;
             
-            channel.sendToQueue(QUEUE_NAME, util.createEvent('INCIDENT_REPORTED', incident));
+            channel.sendToQueue(QUEUE_NAME, util.createEvent('INCIDENT_REPORTED', incident), messageOption);
         }
     });
     
