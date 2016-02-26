@@ -14,18 +14,22 @@ var mongoose = require('mongoose').connect(process.env.MONGOLAB_URI);
 // Application domain
 var util = require('../util');
 var incidentHandler = require('../handlers/incident');
+
 var QUEUE_NAME = 'events';
+var commonOptions = { durable: true, noAck: true };
 
 
 // AMQP Consumer
 open.then(function connected (conn) {
-  var ok = conn.createChannel();
-  ok = ok.then(function channelCreated (channel) {
-    channel.assertQueue(QUEUE_NAME);
+  onExit(conn);
+    
+  var promise = conn.createChannel();
+  promise = promise.then(function channelCreated (channel) {
+    channel.assertQueue(QUEUE_NAME, commonOptions);
     channel.consume(QUEUE_NAME, function channelConsumed (msg) {
       if (!msg) {
         console.warn('Message is null');
-        channel.ack();
+        
         return;
       }
       var event = util.deserialize(msg.content);
@@ -49,11 +53,16 @@ open.then(function connected (conn) {
               }
           }
       );
-      
-      promise.then(function () {
-          channel.ack(msg);
-      });
     });
   });
-  return ok;
+
+  return promise;
 }).then(null, console.warn);
+
+function onExit (connection) {
+    process.on('exit', function () {
+        console.log('[service:report-incident] Process exiting normally...');
+        
+        connection.close(); 
+    });
+}
