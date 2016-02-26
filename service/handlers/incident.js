@@ -87,7 +87,7 @@ exports.filter = function filter (event) {
 
 
 exports.handle = function handle (event) {
-    if (!event.outParams || !outParams.length) {
+    if (!event.outParams || !event.outParams.length) {
         throw new Error('Out params missing. Expecting statsIncident.');
     }
     var statsIncident = event.outParams[0];
