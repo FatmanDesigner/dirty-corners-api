@@ -16,7 +16,7 @@ var DEFAULT_INCIDENT_TIME_RESOLUTION = 15; // minutes. Incidents should happen w
  * If the returned promise returns true, the function handle must be invoked, else passthrough must be
  */ 
 exports.filter = function filter (event) {
-    console.log('[handler: incident.filter]');
+    console.log('[handler: incident.filter] Filtering event');
 
     if (event.type !== 'INCIDENT_REPORTED') {
         return Promise.resolve(false);
@@ -72,7 +72,7 @@ exports.filter = function filter (event) {
         }
         else {
             // WARNING: Original event has been mutated
-            event.statsIncident = statsIncident.toObject();
+            event.outParams = [statsIncident.toObject()];
             
             return true;
         }
@@ -85,8 +85,13 @@ exports.filter = function filter (event) {
     }
 };
 
+
 exports.handle = function handle (event) {
-    var statsIncident = event.statsIncident;
+    if (!event.outParams || !outParams.length) {
+        throw new Error('Out params missing. Expecting statsIncident.');
+    }
+    var statsIncident = event.outParams[0];
+    
     console.log('[handler: incident.handle] Stats Incident #', statsIncident._id);
     // TODO If there is a need for multiple level of reports, fan out here
     // FIXME Find a better way to transfer statsIncident
