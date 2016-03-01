@@ -1,8 +1,8 @@
 if (process.env.MONGOLAB_URI) {
     console.log('MONGOLAB_URI:', process.env.MONGOLAB_URI);
 }
-if (process.env.AUTH0_SECRET) {
-    console.log('AUTH0_SECRET:', process.env.AUTH0_SECRET);
+if (process.env.AUTH0_CLIENT_SECRET) {
+    console.log('AUTH0_CLIENT_SECRET:', process.env.AUTH0_CLIENT_SECRET);
 }
 if (process.env.AUTH0_AUDIENCE) {
     console.log('AUTH0_AUDIENCE:', process.env.AUTH0_AUDIENCE);
@@ -17,7 +17,7 @@ var jwt = require('express-jwt');
 
 // Security
 var jwtCheck = jwt({
-  secret: new Buffer(process.env.AUTH0_SECRET, 'base64'),
+  secret: new Buffer(process.env.AUTH0_CLIENT_SECRET, 'base64'),
   audience: process.env.AUTH0_AUDIENCE
 });
 var corsMiddleware = cors();

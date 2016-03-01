@@ -2,6 +2,10 @@
   "name": "dirty-corners-api",
   "version": "1.0.0",
   "description": "RESTful API for Dirty Corner project",
+  "engines": {
+    "node": "4.1.1",
+    "npm": "2.1.x"
+  },
   "main": "server.js",
   "scripts": {
     "test": "cd /home/khanhhua/Applications/dirty-corners-api",
