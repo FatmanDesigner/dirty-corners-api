@@ -5,7 +5,9 @@ var Incident = require('../models/incident');
 var reportIncident = require('../../service/incident-monitor/report-incident');
 
 exports.GET = function getIncidents (req, res) {
-  res.send('GET incidents');
+  Incident.find({}).lean().then(function (incidents) {
+    res.send({ incidents: incidents });
+  });
 };
 
 exports.POST = function postIncidents (req, res) {
