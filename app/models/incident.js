@@ -15,6 +15,10 @@ var incidentSchema = new Schema({
       country: String
     }
   },
+  reported_by: {
+      type: String,
+      required: true
+  },
   created_at: Date,
   updated_at: Date
 });

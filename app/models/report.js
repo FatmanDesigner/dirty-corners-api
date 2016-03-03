@@ -20,6 +20,14 @@ var reportSchema = new Schema({
     type: String,
     confirmed_total: Number,
     denied_total: Number,
+    confirmed_by: {
+        type: [String], // A SET of userIDs 
+        default: []
+    },
+    denied_by: {
+        type: [String], // A SET of userIDs 
+        default: []
+    },
     stats_incident: { type: Schema.Types.ObjectId, ref: 'stats_incident' }, // Gets the list of backing evidence here
     created_at: Date,
     updated_at: Date
@@ -39,6 +47,9 @@ reportSchema.index({
     "location.country": 1,
     type: 1
 }, { unique: true });
+
+reportSchema.virtual('responded_by').get(function () { return this.confirmed_by.concat(this.denied_by); });
+reportSchema.virtual('responded_total').get(function () { return this.confirmed_total + this.denied_total; });
 
 // See https://scotch.io/tutorials/using-mongoosejs-in-node-js-and-mongodb-applications
 reportSchema.pre('save', function (next) {
