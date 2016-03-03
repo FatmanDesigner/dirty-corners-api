@@ -12,6 +12,11 @@ exports.GET = function getIncidents (req, res) {
 
 exports.POST = function postIncidents (req, res) {
   var data = req.body;
+  var user = req.user;
+  
+  if (!user || !user.sub) {
+    return res.status(401).send('Unauthorized access');
+  }
   
   if (!data) {
     return res.status(400).send('Invalid data');
@@ -29,6 +34,9 @@ exports.POST = function postIncidents (req, res) {
     return res.status(400).send('Invalid data');
   }
   
+  console.log('[incidents.POST] Receiving individual report from user#', user.sub); // sub stands for subject, the person behinds the claim
+  
+  data.reported_by = user.sub;
   var incident = new Incident(data);
 
   incident.save().then(function(incident) {
