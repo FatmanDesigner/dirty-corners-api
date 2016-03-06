@@ -85,7 +85,7 @@ describe('Report controller: PUT_ID', function () {
                 console.warn('Should be overriden with sinon.stub');
                 throw new Error('Not implemented');
             };
-            model.findByIdAndModify = function () { 
+            model.findByIdAndUpdate = function () { 
                 console.warn('Should be overriden with sinon.stub');
                 throw new Error('Not implemented');
             };
@@ -105,7 +105,7 @@ describe('Report controller: PUT_ID', function () {
     afterEach(function () {
         if (Report) {
             Report.findById.restore && Report.findById.restore(); 
-            Report.findByIdAndModify.restore && Report.findByIdAndModify.restore();     
+            Report.findByIdAndUpdate.restore && Report.findByIdAndUpdate.restore();     
         }
     });
     
@@ -153,7 +153,7 @@ describe('Report controller: PUT_ID', function () {
             }
         });
 
-        sinon.stub(Report, 'findByIdAndModify', function() {
+        sinon.stub(Report, 'findByIdAndUpdate', function() {
             mockedReport.confirmed_by.push('facebook|user123');
             mockedReport.confirmed_total = 1;
             
@@ -183,7 +183,7 @@ describe('Report controller: PUT_ID', function () {
         
         process.nextTick(function() {
             expect(Report.findById.calledOnce).to.equal(true);
-            expect(Report.findByIdAndModify.calledOnce).to.equal(true);
+            expect(Report.findByIdAndUpdate.calledOnce).to.equal(true);
             // TODO Fix the assertion
             mock.verify();
             done();
@@ -225,7 +225,7 @@ describe('Report controller: PUT_ID', function () {
             }
         });
 
-        sinon.stub(Report, 'findByIdAndModify', function() {
+        sinon.stub(Report, 'findByIdAndUpdate', function() {
             mockedReport.confirmed_by.push('facebook|user123');
             mockedReport.confirmed_total = 1;
             
@@ -256,10 +256,10 @@ describe('Report controller: PUT_ID', function () {
         
         process.nextTick(function() {
             expect(Report.findById.calledOnce).to.equal(true);
-            expect(Report.findByIdAndModify.callCount).to.equal(0);
+            expect(Report.findByIdAndUpdate.callCount).to.equal(0);
             // TODO Fix the assertion
             // mock.verify();
-            // Report.findByIdAndModify.restore(); 
+            // Report.findByIdAndUpdate.restore(); 
             done();
         });
     });
@@ -299,7 +299,7 @@ describe('Report controller: PUT_ID', function () {
             }
         });
 
-        sinon.stub(Report, 'findByIdAndModify', function() {
+        sinon.stub(Report, 'findByIdAndUpdate', function() {
             mockedReport.confirmed_by.push('facebook|user123');
             mockedReport.confirmed_total = 1;
             
@@ -330,10 +330,10 @@ describe('Report controller: PUT_ID', function () {
         
         process.nextTick(function() {
             expect(Report.findById.calledOnce).to.equal(true);
-            expect(Report.findByIdAndModify.callCount).to.equal(0);
+            expect(Report.findByIdAndUpdate.callCount).to.equal(0);
             // TODO Fix the assertion
             // mock.verify();
-            // Report.findByIdAndModify.restore(); 
+            // Report.findByIdAndUpdate.restore(); 
             done();
         });
     });

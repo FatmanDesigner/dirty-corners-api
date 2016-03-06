@@ -78,7 +78,7 @@ exports.PUT_ID = function postReports (req, res) {
      */
     function confirmReport (report) {
         // Transactional operation
-        return Report.findByIdAndModify(report._id, {
+        return Report.findByIdAndUpdate(report._id, {
             $inc: { confirmed_total: 1 },
             $addToSet: { confirmed_by: user.sub }
         }, { new: true }).lean();
