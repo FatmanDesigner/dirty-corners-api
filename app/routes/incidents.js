@@ -34,6 +34,13 @@ exports.POST = function postIncidents (req, res) {
     return res.status(400).send('Invalid data');
   }
   
+  if (!('spec' in data.location)) {
+    return res.status(400).send('Invalid data');
+  }
+  else if (!('placeid' in data.location.spec || 'country' in data.location.spec)) {
+    return res.status(400).send('Invalid data');  
+  }
+  
   console.log('[incidents.POST] Receiving individual report from user#', user.sub); // sub stands for subject, the person behinds the claim
   
   data.reported_by = user.sub;
