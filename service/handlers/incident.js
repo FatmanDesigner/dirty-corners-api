@@ -45,6 +45,7 @@ exports.filter = function filter (event) {
     return StatsIncident.findOne(conditions).then(function (statsIncident) {
         if (!statsIncident) {
             docStats.incident_list = [incident._id];
+            docStats.reported_by = [incident.reported_by];
             console.log('[handler: incident.filter] Stats incident not found. Creating new one', docStats);
             
             return new StatsIncident(docStats).save();
@@ -54,7 +55,8 @@ exports.filter = function filter (event) {
         return StatsIncident.findByIdAndUpdate(statsIncident.id, 
                 {
                     $inc: { total: 1 },
-                    $push: { incident_list: incident._id }
+                    $push: { incident_list: incident._id },
+                    $addToSet: { reported_by: incident.reported_by }
                 }, updateOptions);
     }).then(handler).catch(errorHandler);
     
@@ -134,10 +136,13 @@ exports.handle = function handle (event) {
             confirmed_total: 0,
             denied_total: 0,
             stats_incident: statsIncident._id,
+            reported_by: statsIncident.reported_by,
         });
+    console.log('DOC REPORT', docReport);
     
     console.log('[handler: incident.handle] Querying for report', condition);
     return Report.findOne(condition).then(function (report) {
+        // FIXME Find the updated statsIncident from database to have to list of reporters
         if (!report) {
             console.log('[handler: incident.handle] Creating a new report for Stats incident #', statsIncident._id);
             

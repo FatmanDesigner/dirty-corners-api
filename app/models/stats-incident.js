@@ -20,6 +20,7 @@ var statsIncidentSchema = new Schema({
     total: Number,
     report: { type: Schema.Types.ObjectId, ref: 'report' },
     incident_list: [{ type: Schema.Types.ObjectId, ref: 'incident' }],
+    reported_by: [{ type: String, ref: 'user' }],
     created_at: Date,
     updated_at: Date
 }, { autoIndex: false });

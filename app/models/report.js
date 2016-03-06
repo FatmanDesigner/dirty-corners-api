@@ -20,6 +20,10 @@ var reportSchema = new Schema({
     type: String,
     confirmed_total: Number,
     denied_total: Number,
+    reported_by: {
+        type: [String], // A SET of userIDs 
+        default: []
+    },
     confirmed_by: {
         type: [String], // A SET of userIDs 
         default: []
