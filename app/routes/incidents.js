@@ -2,7 +2,7 @@
 // IMPLEMENTATION
 // =============================================
 var Incident = require('../models/incident');
-var reportIncident = require('../../service/incident-monitor/report-incident');
+var messagingIncident = require('../messaging/incident');
 
 exports.GET = function getIncidents (req, res) {
   Incident.find({}).lean().then(function (incidents) {
@@ -49,7 +49,9 @@ exports.POST = function postIncidents (req, res) {
   incident.save().then(function(incident) {
     console.log('[controller.incident.POST] Incident has been saved');
     // TODO Send a task item to RabbitMQ here
-    return reportIncident(incident.toObject()).then(function () { return incident; });
+    var connection = req.app.amqpConnection.connection;
+    
+    return messagingIncident.publish(connection, incident.toObject()).then(function () { return incident; });
   }).then(function() {    
     res.send(incident);    
   }).catch(function(error) {

@@ -138,26 +138,20 @@ exports.handle = function handle (event) {
             stats_incident: statsIncident._id,
             reported_by: statsIncident.reported_by,
         });
-    console.log('DOC REPORT', docReport);
-    
+
     console.log('[handler: incident.handle] Querying for report', condition);
     return Report.findOne(condition).then(function (report) {
         // FIXME Find the updated statsIncident from database to have to list of reporters
-        if (!report) {
-            console.log('[handler: incident.handle] Creating a new report for Stats incident #', statsIncident._id);
+        if (report) {
+            // Do nothing because a report is already created
+            console.log('[handler: incident.handle] A report for Stats Incident had already been created');
             
-            return (new Report(docReport)).save().then(function (report) {
-                console.log('[handler: incident.handle] Associating new report to Stats incident #', statsIncident._id);
-                
-                return StatsIncident.findByIdAndUpdate(statsIncident._id, { report: report.id });
-            });
-            
-            // Possibly send to Pubnub for notifications here
+            return true;
         }
-        // Else do nothing because a report is already created
-        console.log('[handler: incident.handle] A report for Stats Incident had already been created');
         
-        return true;
+        return createReport(statsIncident, docReport);
+        // Possibly send to Pubnub for notifications here
+        
         // Leave it here as guidance
         // return Report.findByIdAndUpdate(report.id, 
         //     {
@@ -165,6 +159,20 @@ exports.handle = function handle (event) {
         //         $push: { incident_list: incident.id }
         //     }, updateOptions);
     });
+    
+    function createReport (statsIncident, docReport) {
+        console.log('[handler: incident.handle] Creating a new report for Stats incident #', statsIncident._id);
+            
+        return (new Report(docReport)).save().then(function (report) {
+            console.log('[handler: incident.handle] Associating new report to Stats incident #', statsIncident._id);
+            
+            return StatsIncident.findByIdAndUpdate(statsIncident._id, { report: report.id });
+        }).then(function () {
+            // TODO Publish an event REPORT_CREATED and let report handlers do the job
+            
+            return true;
+        });
+    }
 };
 
 /**

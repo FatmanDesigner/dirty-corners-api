@@ -7,6 +7,9 @@ if (process.env.AUTH0_CLIENT_SECRET) {
 if (process.env.AUTH0_AUDIENCE) {
     console.log('AUTH0_AUDIENCE:', process.env.AUTH0_AUDIENCE);
 }
+if (process.env.CLOUDAMQP_URL) {
+    console.log('CLOUDAMQP_URL:', process.env.CLOUDAMQP_URL);
+}
 
 // Libraries
 var express = require('express');
@@ -14,6 +17,8 @@ var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var cors = require('cors');
 var jwt = require('express-jwt');
+
+var messaging = require('./app/messaging');
 
 // Security
 var jwtCheck = jwt({
@@ -28,6 +33,7 @@ var appRoutes = require('./app/routes');
 
 var app = express();
 app.use(bodyParser.json());
+app.use(messaging({ url: process.env.CLOUDAMQP_URL }));
 // TODO Mount your routes
 app.use('/api', corsMiddleware, jwtCheck, appRoutes);
 

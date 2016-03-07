@@ -1,3 +1,5 @@
+// TODO Change this into folder monitors
+
 console.info('Checking for environment variables...');
 if (process.env.MONGOLAB_URI) {
     console.info('MONGOLAB_URI:', process.env.MONGOLAB_URI);
