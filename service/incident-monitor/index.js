@@ -16,6 +16,7 @@ var mongoose = require('mongoose').connect(process.env.MONGOLAB_URI);
 // Application domain
 var util = require('../util');
 var IncidentHandler = require('../handlers/incident');
+var ReportHandler = require('../handlers/report');
 
 var QUEUE_NAME = 'events';
 var commonOptions = { durable: true };
@@ -43,19 +44,34 @@ open.then(function connected (conn) {
        * the stats for that date and time and type and location
        */      
       var promise;
-      var handler = new IncidentHandler(conn);
+      var incidentHandler = new IncidentHandler(conn);
+      var reportHandler = new ReportHandler(conn);
       // TODO When we have multiple handlers, we must have priority for ordering and loop thru all handlers.
       // TOD Decide whether acknowledge only when all is good or a specifically important handler is good.
-      promise = handler.filter(event).then(
-          function (shouldHandle) {
-              if (shouldHandle === true) {
-                  return handler.handle(event);
+      Promise.all([
+          incidentHandler.filter(event).then(
+              function (shouldHandle) {
+                  if (shouldHandle === true) {
+                      return incidentHandler.handle(event);
+                  }
+                  else {
+                      return incidentHandler.passthrough();
+                  }
               }
-              else {
-                  return handler.passthrough();
+          ),
+          reportHandler.filter(event).then(
+              function (shouldHandle) {
+                  if (shouldHandle === true) {
+                      return reportHandler.handle(event);
+                  }
+                  else {
+                      return reportHandler.passthrough();
+                  }
               }
-          }
-      );
+          )
+      ]).then(function () {
+         console.log('All handlers has completed');
+      });
     }, { noAck: true });
   });
 

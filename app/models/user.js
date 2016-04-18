@@ -8,7 +8,8 @@ var schema = new Schema({
         {
             id: String, // GUID for notification
             status: String,  // 'read' | 'unread',
-            report_id: { type: Schema.Type.ObjectId, ref: 'report' }
+            report_id: { type: Schema.Types.ObjectId, ref: 'report' },
+            created_at: Date
         }
     ],
     created_at: Date,

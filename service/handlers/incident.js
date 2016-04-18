@@ -152,6 +152,8 @@ function handle (event) {
         });
 
     console.log('[handler: incident.handle] Querying for report', condition);
+    var self = this;
+    
     return Report.findOne(condition).then(function (report) {
         // FIXME Find the updated statsIncident from database to have to list of reporters
         if (report) {
@@ -161,7 +163,7 @@ function handle (event) {
             return true;
         }
         
-        return createReport(statsIncident, docReport);
+        return createReport.call(self, statsIncident, docReport);
         // Possibly send to Pubnub for notifications here
         
         // Leave it here as guidance
@@ -178,10 +180,16 @@ function handle (event) {
         return (new Report(docReport)).save().then(function (report) {
             console.log('[handler: incident.handle] Associating new report to Stats incident #', statsIncident._id);
             
-            return StatsIncident.findByIdAndUpdate(statsIncident._id, { report: report.id }).then(function () { return report });
+            return StatsIncident.findByIdAndUpdate(statsIncident._id, { report: report.id }).then(function () { 
+                console.log('### FLAG ###');
+                
+                return report;
+            });
         }).then(function (report) {
-            // TODO Publish an event REPORT_CREATED and let report handlers do the job
-            messagingReport.publish(this.connection, report.toObject());
+            console.log('### FLAG ### connection:', self.connection);
+            
+            // Let report handler do the job
+            messagingReport.publish(self.connection, report.toObject());
             return true;
         });
     }
