@@ -6,16 +6,28 @@
  * 3. passthrough: else clean up if needed
  */
 
+var messagingReport = require('../../app/messaging/report');
+
 var StatsIncident = require('../../app/models/stats-incident');
 var Report = require('../../app/models/report');
 
 var DEFAULT_MINIMUM_INCIDENTS_BEFORE_FILING_REPORT = 5;
 var DEFAULT_INCIDENT_TIME_RESOLUTION = 15; // minutes. Incidents should happen within this threshold to be counted as 1
 
+
+module.exports = IncidentHandler;
+
+function IncidentHandler (amqpConnection) {
+    this.connection = amqpConnection;
+}
+
+IncidentHandler.prototype.filter = filter;
+IncidentHandler.prototype.handle = handle;
+IncidentHandler.prototype.passthrough = passthrough;
 /**
  * If the returned promise returns true, the function handle must be invoked, else passthrough must be
  */ 
-exports.filter = function filter (event) {
+function filter (event) {
     console.log('[handler: incident.filter] Filtering event');
 
     if (event.type !== 'INCIDENT_REPORTED') {
@@ -85,10 +97,10 @@ exports.filter = function filter (event) {
         
         return Promise.resolve(false);
     }
-};
+}
 
 
-exports.handle = function handle (event) {
+function handle (event) {
     if (!event.outParams || !event.outParams.length) {
         throw new Error('Out params missing. Expecting statsIncident.');
     }
@@ -138,26 +150,22 @@ exports.handle = function handle (event) {
             stats_incident: statsIncident._id,
             reported_by: statsIncident.reported_by,
         });
-    console.log('DOC REPORT', docReport);
-    
+
     console.log('[handler: incident.handle] Querying for report', condition);
+    var self = this;
+    
     return Report.findOne(condition).then(function (report) {
         // FIXME Find the updated statsIncident from database to have to list of reporters
-        if (!report) {
-            console.log('[handler: incident.handle] Creating a new report for Stats incident #', statsIncident._id);
+        if (report) {
+            // Do nothing because a report is already created
+            console.log('[handler: incident.handle] A report for Stats Incident had already been created');
             
-            return (new Report(docReport)).save().then(function (report) {
-                console.log('[handler: incident.handle] Associating new report to Stats incident #', statsIncident._id);
-                
-                return StatsIncident.findByIdAndUpdate(statsIncident._id, { report: report.id });
-            });
-            
-            // Possibly send to Pubnub for notifications here
+            return true;
         }
-        // Else do nothing because a report is already created
-        console.log('[handler: incident.handle] A report for Stats Incident had already been created');
         
-        return true;
+        return createReport.call(self, statsIncident, docReport);
+        // Possibly send to Pubnub for notifications here
+        
         // Leave it here as guidance
         // return Report.findByIdAndUpdate(report.id, 
         //     {
@@ -165,13 +173,33 @@ exports.handle = function handle (event) {
         //         $push: { incident_list: incident.id }
         //     }, updateOptions);
     });
-};
+    
+    function createReport (statsIncident, docReport) {
+        console.log('[handler: incident.handle] Creating a new report for Stats incident #', statsIncident._id);
+            
+        return (new Report(docReport)).save().then(function (report) {
+            console.log('[handler: incident.handle] Associating new report to Stats incident #', statsIncident._id);
+            
+            return StatsIncident.findByIdAndUpdate(statsIncident._id, { report: report.id }).then(function () { 
+                console.log('### FLAG ###');
+                
+                return report;
+            });
+        }).then(function (report) {
+            console.log('### FLAG ### connection:', self.connection);
+            
+            // Let report handler do the job
+            messagingReport.publish(self.connection, report.toObject());
+            return true;
+        });
+    }
+}
 
 /**
  * passthrough has no arguments on purpose. This function is supposed to be a cleanup function.
  */
-exports.passthrough = function handle () {
+function passthrough () {
     console.log('[handler: incident.passthrough]');
     
     return Promise.resolve();
-};
+}
