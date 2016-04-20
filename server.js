@@ -37,10 +37,13 @@ app.use(messaging({ url: process.env.CLOUDAMQP_URL }));
 // TODO Mount your routes
 app.use('/api', corsMiddleware, jwtCheck, appRoutes);
 
+var routeWebHooks = require('./app/routes/web-hooks');
+app.get('/hooks/page', routeWebHooks.GET);
+
 // APPLICATION handlers
 app.use(function errorHandler(err, req, res, next) {
   console.error(err);
-    
+
   res.status(err.status).send(err.message);
 });
 
