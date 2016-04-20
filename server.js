@@ -39,6 +39,7 @@ app.use('/api', corsMiddleware, jwtCheck, appRoutes);
 
 var routeWebHooks = require('./app/routes/web-hooks');
 app.get('/hooks/page', routeWebHooks.GET);
+app.post('/hooks/page', routeWebHooks.POST);
 
 // APPLICATION handlers
 app.use(function errorHandler(err, req, res, next) {
