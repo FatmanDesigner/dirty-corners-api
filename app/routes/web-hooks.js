@@ -9,5 +9,5 @@ exports.POST = function getPageFeed (req, res) {
 
   console.log(JSON.stringify(data));
 
-  res.status(200);
+  res.status(200).end();
 };
