@@ -26,14 +26,16 @@
   },
   "homepage": "https://github.com/FatmanDesigner/dirty-corners-api",
   "dependencies": {
-    "express": "^4.13.4",
-    "mongoose": "^4.4.4",
-    "dotenv": "^2.0.0",
-    "body-parser": "^1.15.0",
     "amqplib": "^0.4.1",
-    "express-jwt": "^3.3.0",
+    "body-parser": "^1.15.0",
     "cors": "^2.7.1",
-    "node-uuid": "^1.4.7"
+    "dotenv": "^2.0.0",
+    "express": "^4.13.4",
+    "express-jwt": "^3.3.0",
+    "fb": "^1.0.2",
+    "mongoose": "^4.4.4",
+    "node-uuid": "^1.4.7",
+    "redis": "^2.5.3"
   },
   "devDependencies": {
     "mocha": "^2.4.5",
