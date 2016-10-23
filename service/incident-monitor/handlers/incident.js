@@ -6,11 +6,11 @@
  * 3. passthrough: else clean up if needed
  */
 // var emit = function () {}
-var messagingReport = require('../../app/messaging/report');
+var messagingReport = require('../../../app/messaging/report');
 
-var Incident = require('../../app/models/incident');
-var StatsIncident = require('../../app/models/stats-incident');
-var Report = require('../../app/models/report');
+var Incident = require('../../../app/models/incident');
+var StatsIncident = require('../../../app/models/stats-incident');
+var Report = require('../../../app/models/report');
 
 var DEFAULT_MINIMUM_INCIDENTS_BEFORE_FILING_REPORT = 5;
 var DEFAULT_INCIDENT_TIME_RESOLUTION = 15; // minutes. Incidents should happen within this threshold to be counted as 1

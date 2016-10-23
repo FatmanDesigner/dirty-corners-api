@@ -15,8 +15,8 @@ var mongoose = require('mongoose').connect(process.env.MONGOLAB_URI);
 
 // Application domain
 var util = require('../util');
-var IncidentHandler = require('../handlers/incident');
-var ReportHandler = require('../handlers/report');
+var IncidentHandler = require('./handlers/incident');
+var ReportHandler = require('./handlers/report');
 
 var QUEUE_EVENTS = 'events';
 var QUEUE_REPORTS = 'reports';
