@@ -33,6 +33,7 @@
     "express": "^4.13.4",
     "express-jwt": "^3.3.0",
     "fb": "^1.0.2",
+    "lodash": "^4.16.4",
     "mongoose": "^4.6.4",
     "node-uuid": "^1.4.7",
     "redis": "^2.5.3"

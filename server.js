@@ -25,7 +25,9 @@ var jwtCheck = jwt({
   secret: new Buffer(process.env.AUTH0_CLIENT_SECRET, 'base64'),
   audience: process.env.AUTH0_AUDIENCE
 });
-var corsMiddleware = cors();
+var corsMiddleware = cors({
+  origin: '*'
+});
 
 mongoose.connect(process.env.MONGOLAB_URI);
 // Application domain
